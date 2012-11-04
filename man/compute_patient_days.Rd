@@ -1,0 +1,18 @@
+\name{compute_patient_days}
+\alias{compute_patient_days}
+\title{Compute the total number of patient days.}
+\usage{
+  compute_patient_days(patients = .patients_from_events(cpp$events),
+    cpp)
+}
+\arguments{
+  \item{patients}{a data frame with columns admission and
+  discharge}
+
+  \item{cpp}{a C++ referenc object of class
+  \code{\link{cont.inf.model}}}
+}
+\description{
+  Compute the total number of patient days.
+}
+

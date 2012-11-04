@@ -1,0 +1,13 @@
+\name{computeIPPD}
+\alias{computeIPPD}
+\title{Compute infection per patient days at risk}
+\usage{
+  computeIPPD(sim)
+}
+\arguments{
+  \item{sim}{see \code{\link{doSim}}}
+}
+\description{
+  Compute infection per patient days at risk
+}
+

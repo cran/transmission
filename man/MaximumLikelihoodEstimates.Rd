@@ -1,0 +1,55 @@
+\name{MaximumLikelihoodEstimates}
+\alias{MaximumLikelihoodEstimates}
+\title{Compute Maximum Likelihood Estimates}
+\usage{
+  MaximumLikelihoodEstimates(patients, tests,
+    patient.vars = sim.patient.vars,
+    test.vars = sim.test.vars)
+}
+\arguments{
+  \item{patients}{data.frame for patient data}
+
+  \item{tests}{data.frame for testing data}
+
+  \item{patient.vars}{mapping for patient variables.  See
+  DETAILS.}
+
+  \item{test.vars}{mapping for test variables. See DETAILS.
+
+  \code{patient.vars} and \code{test.vars} contain mappings
+  for the variables in patients and tests, respectively.
+  they should be formed with
+  \code{\link[plyr:quoted]{.(name = data.expr)}}, where
+  \code{name} is one of the required variable names, and
+  \code{data.expr} is variable name or expression to be
+  evaluated in the appropriate data frame.
+
+  For patient.vars the required names are: Admissions,
+  Discharges, Importation Acquisition, and AcqTimes.
+  Admissions, Discharges, and AcqTimes are numeric time
+  values.  Importation and Acquisition are logical
+  variables.
+
+  For test.vars the required names are: TestResult,
+  PatientID, and TestTime. TestResult is a logical for
+  status of the test, TRUE indicated positive, FALSE
+  indicates negative. PatientID must correspond to the row
+  in patients data. TestTime is numeric and indicates the
+  time of the test.}
+}
+\value{
+  named numeric vector for maximum likelihood estimates.  \
+  The names are Import.mle , Sensitivity.mle,
+  Transmission.mle
+
+  Estimates the maximum likelihood estimates for
+  Importation, Transmission, and Sensitivity given the full
+  data.
+}
+\description{
+  Compute Maximum Likelihood Estimates
+}
+\seealso{
+  \code{\link[plyr:quoted]{.()}}
+}
+

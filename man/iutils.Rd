@@ -1,0 +1,23 @@
+\docType{data}
+\name{iutils}
+\alias{.event.to.patient.map}
+\alias{.tests_from_events}
+\alias{iutils}
+\title{Internal Utilities
+Recast event data to a patient data frame.}
+\format{Named chr [1:5] "admission" "negative.test" "positive.test" ...
+ - attr(*, "names")= chr [1:5] "0" "1" "2" "3" ...}
+\usage{
+  .patients_from_events(events)
+
+  .tests_from_events(events)
+
+  .event.to.patient.map
+}
+\description{
+  Internal Utilities Recast event data to a patient data
+  frame.
+}
+\keyword{datasets}
+\keyword{internal}
+
