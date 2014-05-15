@@ -5,7 +5,7 @@ namespace transsim{
   ward_v2::ward_v2(unsigned int cap):capacity(cap){
     infected.reserve(capacity);
     susceptible.reserve(capacity);
-  };
+  }
   bool ward_v2::empty(){return infected.empty() && susceptible.empty();}
   bool ward_v2::full(){return size()>=capacity;}
   size_type ward_v2::size(){return infected.size()+susceptible.size();}
@@ -47,3 +47,4 @@ namespace transsim{
     }
   }
 }
+

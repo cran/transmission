@@ -33,7 +33,6 @@ formatTime <- function(x){
 #' @param ... ignored
 #' 
 #' @seealso system.time proc.time
-#' @S3method print proc_time
 #' @export print.proc_time
 print.proc_time<-function(x, ...){
   times <- formatTime(x)

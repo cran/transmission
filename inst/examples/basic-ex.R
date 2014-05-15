@@ -17,3 +17,10 @@ run <- mcmc$run(N)
 if(require(ggplot2) && require(plyr)){
     mcmc_chain_plot(run)
 }
+
+# use True to specify that you are using a slope model
+mcmc_slope <- new( cont.inf.model, TRUE)
+mcmc_slope$using_slope
+mcmc_slope$load(simdf$patients, simdf$tests)
+slope_run <- mcmc_slope$run(N)
+

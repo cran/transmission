@@ -5,7 +5,7 @@ library(plyr)
 context("Loading Data")
 test_that("Reading in data", {
 set.seed(12345)
-simdf <- doSim(10, 0.01, 0.05,  7.5, 5.5, 100, fn=0.05)
+simdf <- doSim(cap=10, trans=0.01, imp=0.05,  pd=1/4, stay=5.5, len=100, fn=0.05)
 mcmc <- new(cont.inf.model)
 mcmc$load(simdf$patients, simdf$tests)
 

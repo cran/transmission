@@ -13,10 +13,17 @@
 #
 ################################################################################
 
-#'  Transmission Model Simulation and Fitting in Continuous Time for Small Populations
+#'  @name transmission
+#'  @rdname transmission-package
+#'  @title Infectious Disease Transmission Modeling on Individuals
 #'
+#'  @description
 #'  The transmission package provides methods for simulating data from a transmission
 #'  model in continuous time.
+#'  
+#'  @details
+#'  The model is fit through a continuous time MCMC estimation.
+#'  
 #'  
 #'  @author
 #'  Andrew Redd \email{Andrew.Redd@@hsc.utah.edu},
@@ -26,31 +33,17 @@
 #'  Maintainer: Andrew Redd \email{Andrew.Redd@@hsc.utah.edu}
 #'  
 #'  
-#'  @name transmission
-#'  @rdname transmission-package
-#'  @docType package
-#'  @title Infectious Disease Transmission Modeling on Individuals
-#'  @keywords package
 #'  @seealso see \code{\link{doSim}} for simulating data.
-NULL
-
-#' Loading function
-#' @param pkgname the package name
-#' @seealso \code{\link{.onAttach}}
-#' @rdname utils
-#' 
+#'  @docType package
+#'  @keywords package
 #' @import Rcpp
 #' @import methods
 #' @useDynLib transmission
-#' @param libname the library name
 #' @exportPattern ^_rcpp_module_[:alpha:]+
-#' @export cont.inf.model
-.onLoad <- function(libname, pkgname){
-   # require("methods", character.only=TRUE, quietly=TRUE)
-  stopifnot("package:methods" %in% search())
-    loadModule('continuous', T)
-    loadModule('sim', T)
-}
+NULL
+
+loadModule('continuous', T)
+loadModule('sim', T)
 
 # Global variable access protection.
 event <-

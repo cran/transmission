@@ -4,7 +4,7 @@ library(transmission)
 
 context("Likelihoods")
 test_that("Likelihood Computations", {
-simdf <- doSim(100, 0.01, 0.05,  7.5, 5.5, 100, fn=0.05)
+simdf <- doSim(cap=100, tran=0.01, imp=0.05,  test=7.5, stay=5.5, len=100, fn=0.05)
 
 (ll1 <- GetFullDataLikelihood(tr = 0.01, imp = 0.05, fn = 0.25, 
   patients=simdf$patients, tests=simdf$tests))

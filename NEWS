@@ -1,6 +1,18 @@
 NEWS
 ====
 
+
+transmission 0.2.0
+------------------
+* Added optional slope fitting
+
+
+transmission 0.1.1
+------------------
+* updated src classes
+* added alternatives for test rate.
+
+
 transmission 0.1
 ----------------
 

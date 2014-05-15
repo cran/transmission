@@ -1,0 +1,24 @@
+<!--
+%\VignetteEngine{knitr::knitr}
+%\VignetteIndexEntry{Tranmission Modeling}
+-->
+
+Transmission Modeling
+=====================
+This `transmission` package provides facilities for simulation and 
+fitting of individual level disease transmission models within a
+hospital ward or similar closed setting.
+
+
+Simulation
+==========
+Simulating a dataset is performed with the `doSim` function.
+It has several basic options to control the simulation.
+
+* `capacity` - the capacity of hospital.  There cannot be more patients in the
+  ward at any given time than `capacity`.
+* 
+
+
+
+

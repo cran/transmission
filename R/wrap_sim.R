@@ -19,6 +19,7 @@
 #' @param transmission the transmission rate
 #' @param importation the probability of being infected when admitted
 #' @param test_rate the rate of testing in the hospital in mean tests/day.
+#' @param pd_test_rate the rate of testing in the hospital defined by per patient day.
 #' @param stay the mean stay time for the hospital
 #' @param length the number of days to run the simulation for
 #' @param balance the long run average percent of capacity filled
@@ -61,25 +62,32 @@
 #'    sim <- newSimulator(capacity=100, balance=.75, stay=5.5, test_rate=7.5,
 #'      transmission=0.01, importation=0.05, fn=0.05, fp=0)
 #'    sim
-#'    str(sim)
 #'    sim$run(length=100)
 #'    sim$finalize()
 #'    simdata <- sim$getData()
 #'    str(simdata)
 #'    lapply(simdata, summary)
 #'    rm(sim)
-newSimulator<-function(capacity, transmission, importation, test_rate, stay,
-                       length=0, balance=1, fn=0, fp=0){
+newSimulator<-function(capacity, transmission, importation, stay
+                      , test_rate=NULL, pd_test_rate=NULL
+                      , length=0, balance=1, fn=0, fp=0){
   loadModule("sim")
   s<-new(sim2, capacity)
   s$transmission<- transmission
   s$importation<- importation
-  s$test_rate<-test_rate
   s$mean_stay<-stay
   s$fp<-fp
   s$fn<-fn
   s$balance<-balance
-  s$run(length)
+  if(!is.null(test_rate) && !is.null(pd_test_rate))
+    stop("You cannot specify both `test_rate` and `pd_test_rate`")
+  if(!is.null(test_rate))
+    s$test_rate <- test_rate
+  else if(!is.null(pd_test_rate))
+    s$pd_test_rate <- pd_test_rate
+  else stop("Must specify either `test_test` or `pd_test_rate` but not both.")
+    
+  if(length)s$run(length)
   s
 }
 
@@ -93,11 +101,20 @@ newSimulator<-function(capacity, transmission, importation, test_rate, stay,
 #' @family simulation
 #' @rdname simulation
 #' @export
-doSim<-function(capacity, transmission, importation, test_rate, stay, length, ..., .finish=TRUE){
+doSim<-function(length, ..., .finish=TRUE){
+  s <- newSimulator(length=length, ...)
   data <- structure(
-    newSimulator(capacity, transmission, importation, test_rate, stay, length, ...)$getData(),
-	  simparams = c( capacity=capacity, transmission=transmission, importation=importation,
-                   test_rate=test_rate, stay=stay, length=length))
+      s$getData(),
+	  simparams = {list( length=length
+                      , transmission = s$transmission
+                      , importation  = s$importation
+                      , stay         = s$mean_stay
+                      , test_rate    = if(!s$use_pd) s$test_rate
+                      , pd_test_rate = if( s$use_pd) s$pd_test_rate
+                      , balance      = s$balance
+                      , fn           = s$fn
+                      , fp           = s$fp
+      )})
   if (.finish) {
     data$patients <- subset(data$patients, admit < length)
     data$tests <- subset(data$tests, time < length)

@@ -52,7 +52,7 @@ protected:
 	void reportErrors()
 	{
 		if (fatal)
-			throw(new logic_error(errout.c_str()));
+			throw(new runtime_error(errout));
 	}
 
 	void warning(Event *e, string message)

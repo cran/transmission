@@ -4,7 +4,7 @@ library(transmission)
 context("Reproducibility")
 test_that("Reproducibility", {
 set.seed(20111228)
-simdf <- doSim(100, 0.01, 0.05,  7.5, 5.5, 100, fn=0.05)
+simdf <- doSim(cap=100, tran=0.01, imp=0.05,  test_rate=7.5, stay=5.5, len=100, fn=0.05)
 
 N <- 1e1
 

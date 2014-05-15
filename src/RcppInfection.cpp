@@ -31,6 +31,9 @@ public:
   RInfectionMCMC() : InfectionMCMC(){
     InfectionMCMC::setRandomUniform(Runif);
   }
+  RInfectionMCMC(bool use_slope) : InfectionMCMC(use_slope){
+    InfectionMCMC::setRandomUniform(Runif);
+  }
   void LoadDataByEvents(const DataFrame &events){
     NumericVector eventtime = events[0];
     IntegerVector eventpid  = events[1];
@@ -83,7 +86,11 @@ public:
     h->finalize();
   }
   void LoadDataByList(const List& PTlist){
-    LoadData(PTlist[0], PTlist[1]);
+    // const DataFrame patients = Rcpp::DataFrame_Impl<PreserveStorage>(PTlist[0]);  // Assignment due to a new requirement that it be compilable by clang.
+    // const DataFrame tests    = Rcpp::DataFrame_Impl<PreserveStorage>(PTlist[1]);
+    LoadData( Rcpp::DataFrame_Impl<PreserveStorage>(PTlist[0])
+            , Rcpp::DataFrame_Impl<PreserveStorage>(PTlist[1])
+            );
   }
   
   
@@ -95,43 +102,44 @@ public:
     BEGIN_RCPP
 
     IntegerVector rInum(nsims);
-    IntegerVector rns(nsims);
+    //IntegerVector rns(nsims);
     NumericVector rTransmission(nsims);
     NumericVector rImportation(nsims);
     NumericVector rFalseNeg(nsims);
     NumericVector rFalsePos(nsims);
-    NumericVector rLL(nsims);
+    NumericVector rLL(includell?nsims:0);
+    NumericVector rSlope((c->using_slope)?nsims:0);
 
     // Run Simulation
     for (int isim=0; isim<nsims; isim++)
     {
-        double res[4];
-        rns                 = nextSample(res);
+        nextSample();
         rInum(isim)         = nSamples();
-        rTransmission(isim) = res[0];
-        rImportation(isim)  = res[1];
-        rFalsePos(isim)     = res[2];
-        rFalseNeg(isim)     = res[3];
+        rTransmission(isim) = c->getTransmission();
+        rImportation(isim)  = c->getImportation();
+        rFalsePos(isim)     = c->getFalsePos();
+        rFalseNeg(isim)     = c->getFalseNeg();
+      if(c->using_slope)
+        rSlope              = c->getSlope();
       if(includell)
         rLL(isim)           = getLikelihood();
     }
+    
+    List results = List::create(
+        _(".n")            = rInum
+      , _("transmission")  = rTransmission
+      , _("importation")   = rImportation
+      , _("false.neg")     = rFalseNeg
+      , _("false.pos")     = rFalsePos
+      );
+    
     if(includell) {
-        return DataFrame::create(
-        _(".n")            = rInum,
-        _("transmission")  = rTransmission,
-        _("importation")   = rImportation,
-        _("false.neg")     = rFalseNeg,
-        _("false.pos")     = rFalsePos,
-        _("loglik")        = rLL,
-        _("nchange")       = rns);
-    } else {
-        return DataFrame::create(
-        _(".n")            = rInum,
-        _("transmission")  = rTransmission,
-        _("importation")   = rImportation,
-        _("false.neg")     = rFalseNeg,
-        _("false.pos")     = rFalsePos);
+        results["loglik"] = rLL;
+    } 
+    if(c->using_slope) {
+        results["slope"] = rSlope;
     }
+    return DataFrame(results);
     END_RCPP
   }
   SEXP events() {
@@ -167,17 +175,18 @@ public:
   void   setFalsePos    (double in){        InfectionMCMC::setFalsePos    (in);}
   double getLikelihood(){return InfectionMCMC::getLikelihood();}
   int nSamples(){ return InfectionMCMC::nSamples();}
-  SEXP getDoFlags() {
-    return LogicalVector::create(
-        _["States"]      = dos  != 0
-      , _["Transmission"]= dot  != 0 
-      , _["Importation"] = doi  != 0
-      , _["FalseNeg"]    = dofn != 0
-      , _["FalsePos"]    = dofp != 0
-    );
-  }
+  // SEXP getDoFlags() {
+    // return LogicalVector::create(
+        // _["States"]      = dos  != 0
+      // , _["Transmission"]= dot  != 0 
+      // , _["Importation"] = doi  != 0
+      // , _["FalseNeg"]    = dofn != 0
+      // , _["FalsePos"]    = dofp != 0
+    // );
+  // }
   void setDoStates(bool yn){dos = yn;}
   void setDoTransmission(bool yn){dot = yn;}
+  void setDoTransSlope(bool yn){dot = yn;}
   void setDoImportation(bool yn){doi = yn;}
   void setDoFN(bool yn){dofn = yn;}
   void setDoFP(bool yn){dofp = yn;}
@@ -186,6 +195,9 @@ public:
   bool getDoImportation() {return doi ;}
   bool getDoFN()          {return dofn;}
   bool getDoFP()          {return dofp;}
+  bool getDoSlope()       {return dot1;}
+  void setDoSlope(bool in){dot1=in;}
+  bool getUsingSlope()    {return c->using_slope;}
 };
 }
 
@@ -194,6 +206,7 @@ using namespace continuous;
 RCPP_MODULE(continuous){
 class_<continuous::RInfectionMCMC>("cont.inf.model")
     .constructor("default constructor")
+    .constructor<bool>("Constructor for a slope based model.")
     .method<SEXP, int>("run", &continuous::RInfectionMCMC::run, "run the MCMC chain")
     .method<SEXP, int>("runll", &continuous::RInfectionMCMC::runll, "run the MCMC chain")
     .method("load_by_events", &continuous::RInfectionMCMC::LoadDataByEvents, "Load data into the object from a data frame of events.")
@@ -206,6 +219,7 @@ class_<continuous::RInfectionMCMC>("cont.inf.model")
             "retrieve the number of events stored in the history.")
     .property("nPatients", &continuous::RInfectionMCMC::nPatients,
             "retrieve the number of patients stored in the history.")
+    .property("using_slope", &continuous::RInfectionMCMC::getUsingSlope)
     
     // Fitting Flags
            
@@ -244,7 +258,7 @@ class_<continuous::RInfectionMCMC>("cont.inf.model")
                                "Number of patients in population.")
      .property("nSamples"    , &continuous::RInfectionMCMC::nSamples,
                                "Number of patients in population.")
-     .property("doStates"   ,  &continuous::RInfectionMCMC::getDoStates,
+     .property("doStates"    , &continuous::RInfectionMCMC::getDoStates,
                                &continuous::RInfectionMCMC::setDoStates,
                                "")
      .property("doTransmission",&continuous::RInfectionMCMC::getDoTransmission,
@@ -259,7 +273,10 @@ class_<continuous::RInfectionMCMC>("cont.inf.model")
      .property("doFP"   ,  &continuous::RInfectionMCMC::getDoFP,
                            &continuous::RInfectionMCMC::setDoFP,
                                "")
-     .property("doFlags", &continuous::RInfectionMCMC::getDoFlags)
+     .property("doSlope"   ,  &continuous::RInfectionMCMC::getDoSlope,
+                           &continuous::RInfectionMCMC::setDoSlope,
+                               "")
+     //.property("doFlags", &continuous::RInfectionMCMC::getDoFlags)
     ;
 //*/
 }

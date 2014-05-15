@@ -5,7 +5,7 @@ context("Input formats")
 testthat::test_that("Indiffernce to input formats.", {
     # generate data
     set.seed(20111228)
-    simdf <- doSim(100, 0.01, 0.05,  7.5, 5.5, 100, fn=0.05)
+    simdf <- doSim(cap=100, trans=0.01, imp=0.05,  test=7.5, stay=5.5, len=100, fn=0.05)
     N <- 10L
     
     # Patient/Test format

@@ -18,30 +18,6 @@
 
 
 
-if(FALSE){# For Testing, remove when finished.
-library(reshape2)
-library(transsim)
-library(plyr)
-library(reshape2)
-{ #Parameters
-  capacity<-30
-  transmission<-0.05
-  length<-365*3
-  importation<-0.1
-  balance<-.8
-  test_rate <- 4
-  stay <- 5
-}
-rtdata<-doSim(capacity, transmission, importation, test_rate, stay, length, balance=balance)
-attach(rtdata)
-patient.vars = .(
-  Admissions  = admit,
-  Discharges  = discharge,
-  Importation = (!is.na(infection)) & (infection==admit),
-  AcqTimes    = infection)
-
-Vswitch(d0$event.type, infection=1, discharge=-1,0)->x
-}
 
 #' Vectorized switch
 #'
@@ -312,7 +288,7 @@ ComputeYFrame <- function(PatientInfo){
   stopifnot(inherits(PatientInfo, 'PatientInfo'))
   measure.vars = c('Admissions', 'AcqTimes', 'Discharges')
   id.vars = c('.id')
-  y.frame <- reshape2:::melt.data.frame(
+  y.frame <- melt(
     mutate(PatientInfo, 
       AcqTimes=ifelse(Importation|Acquisition, AcqTimes, Discharges)
     )[, c(id.vars,measure.vars)]

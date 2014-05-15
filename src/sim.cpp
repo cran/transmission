@@ -27,6 +27,7 @@ class sim_v2{
     double lambda;
     double importation;
     double test_rate;
+    bool   test_perpd;
     double false_negative_rate;
     double false_positive_rate;
     double mean_stay;
@@ -34,7 +35,7 @@ class sim_v2{
     ward_v2 current;
     enum possibleStep{sadmit, sdischarge, sinfect, stest, snone}; 
   public:
-    sim_v2(unsigned int cap): end(0), lambda(0), importation(0), test_rate(0), false_negative_rate(0), false_positive_rate(0), mean_stay(0), balance(0), current(cap){}     
+    sim_v2(unsigned int cap): end(0), lambda(0), importation(0), test_rate(0), test_perpd(false), false_negative_rate(0), false_positive_rate(0), mean_stay(0), balance(0), current(cap){}
     ~sim_v2(){
       for(std::list<patient*>::iterator patient=all.begin(); patient!= all.end(); patient++){
         delete *patient;
@@ -45,8 +46,17 @@ class sim_v2{
     void set_lambda(double x){ lambda=x;}
     double get_importation(){return importation;}
     void set_importation(double x){ importation=x;}
-    double get_test_rate(){return test_rate;}
-    void set_test_rate(double x){ test_rate=x;}
+    bool get_test_perpd(){return test_perpd;}
+    double get_fixed_test_rate(){
+        if(test_perpd) throw runtime_error("Test rate is per patient, not gloabally fixed.");
+        return test_rate;
+    }
+    void set_fixed_test_rate(double x){ test_rate=x; test_perpd=false;}
+    double get_perpd_test_rate(){
+        if(!test_perpd) throw runtime_error("Test rate is fixed, not per patient day.");
+        return test_rate;
+    }
+    void set_perpd_test_rate(double x){ test_rate=x; test_perpd=true;}
     double get_false_negative_rate(){return false_negative_rate;}
     void set_false_negative_rate(double x){ false_negative_rate=x;}
     double get_false_positive_rate(){return false_positive_rate;}
@@ -89,7 +99,7 @@ class sim_v2{
           }
         }
         if(!current.empty() && test_rate>0){
-          t=rexp(1,test_rate)[0];
+          t=rexp(1,test_perpd ? (test_rate * current.size()) : test_rate)[0];
           if(t<next){
             next=t;
             step=stest;
@@ -168,22 +178,24 @@ class sim_v2{
         _["tests"] = tests);
     }
   };
-};
+}
 
 RCPP_MODULE(sim){
   class_<transsim::sim_v2>("sim2")
     .constructor<int>("Setup simulation with a given capacity.")
     .method("run",&transsim::sim_v2::run, "run for longer.")
     .method("getData", &transsim::sim_v2::getData, "gets the Data from the simulation")
-    .property("transmission", &transsim::sim_v2::get_lambda, &transsim::sim_v2::set_lambda,"Transmission as a hazard.")
-    .property("importation", &transsim::sim_v2::get_importation, &transsim::sim_v2::set_importation,"Importation as a probability")
-    .property("test_rate", &transsim::sim_v2::get_test_rate, &transsim::sim_v2::set_test_rate,"Rate of testing in n/day.")
-    .property("balance", &transsim::sim_v2::get_balance, &transsim::sim_v2::set_balance,"The balance between admission and discharges.  This is approximatly the percent of full for the ward.")
-    .property("fn", &transsim::sim_v2::get_false_negative_rate, &transsim::sim_v2::set_false_negative_rate,"probability of a false negative")
-    .property("fp", &transsim::sim_v2::get_false_positive_rate, &transsim::sim_v2::set_false_positive_rate,"probability of a false positive")
-    .property("mean_stay", &transsim::sim_v2::get_mean_stay, &transsim::sim_v2::set_mean_stay,"Mean number of days a patient stays in the hospital.")
-    .property("capacity",&transsim::sim_v2::get_capacity, "Retrieves capacity for the ward.")
-    .property("length", &transsim::sim_v2::get_length,"get the length of the simulation.")
+    .property("transmission"    , &transsim::sim_v2::get_lambda             , &transsim::sim_v2::set_lambda             , "Transmission as a hazard.")
+    .property("importation"     , &transsim::sim_v2::get_importation        , &transsim::sim_v2::set_importation        , "Importation as a probability")
+    .property("test_rate"       , &transsim::sim_v2::get_fixed_test_rate    , &transsim::sim_v2::set_fixed_test_rate    , "Rate of testing in n/day.")
+    .property("pd_test_rate"    , &transsim::sim_v2::get_perpd_test_rate    , &transsim::sim_v2::set_perpd_test_rate    , "Rate of testing per patient day.")
+    .property("balance"         , &transsim::sim_v2::get_balance            , &transsim::sim_v2::set_balance            , "The balance between admission and discharges.  This is approximatly the percent of full for the ward.")
+    .property("fn"              , &transsim::sim_v2::get_false_negative_rate, &transsim::sim_v2::set_false_negative_rate, "probability of a false negative")
+    .property("fp"              , &transsim::sim_v2::get_false_positive_rate, &transsim::sim_v2::set_false_positive_rate, "probability of a false positive")
+    .property("mean_stay"       , &transsim::sim_v2::get_mean_stay          , &transsim::sim_v2::set_mean_stay          , "Mean number of days a patient stays in the hospital.")
+    .property("capacity"        , &transsim::sim_v2::get_capacity           , "Retrieves capacity for the ward.")
+    .property("length"          , &transsim::sim_v2::get_length             , "get the length of the simulation.")
+    .property("use_pd"          , &transsim::sim_v2::get_test_perpd         , "are tests administered by patient day or at a constant rate.")
     ;
   
 }

@@ -1,12 +1,12 @@
 
-class Event 
+class Event
 {
-friend class History;
+friend class History; // friends can use classes proteccted information.
 friend class Calculator;
 friend class Sampler;
 
-protected:
-        int index;
+protected: // member of same class or member of derived class can use protected
+        int index; // create needed variables
         double t;
         double y;
         double dy;
@@ -15,15 +15,18 @@ protected:
 	int pat;
 	int tp;
 
-public:
-    enum{
-          marker    = -1,
-          admission = 0,
-          negtest   = 1,
-          postest   = 2,
-          discharge = 3,
-          infection = 4};
-	Event(double time, int patient, int kind)
+public: // available for all to use
+	enum // relating event-types with integer values
+    {
+        marker    = -1,
+        admission = 0,
+        negtest   = 1,
+        postest   = 2,
+        discharge = 3,
+        infection = 4
+};
+
+	Event(double time, int patient, int kind) // Event function within Event class
 	{
 		pat = patient;
 		t = time;
@@ -32,7 +35,7 @@ public:
 		dz = 0;
 		index = 0;
 
-		switch(kind)
+		switch(kind) // if kind = admission make dy = 0, dz = 1; etc...
 		{
 		case admission:
 			dy = 0;
@@ -49,13 +52,13 @@ public:
 			dz = 0;
 			break;
 
-		case marker:
+		case marker: // Hmm... not sure what marker represents yet
 			pat = -1;
 			break;
 		}
 	}
 
-        ~Event()
+        ~Event() // defines the desctructor of Event()
         {
         }
 

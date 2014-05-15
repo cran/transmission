@@ -18,15 +18,40 @@
 #' @name cont.inf.model
 #' @aliases cont.inf.model-class
 #'
-#' @usage new(cont.inf.model, df)
-#' @usage new(cont.inf.model, patients, tests)
+# @usage cont.inf.model$new(df)
+#        cont.inf.model$new(patients, tests)
 #' @param df an event formatted data.frame.
 #' @param patients an data frame of patient information with admission, discharge
 #'                 and optionally infection times
 #' @param tests    an data frame of test information with test time, patient id, and result.
 #'
+#' @field run(n)                   run the mcmc chain for n steps.
+#' @field runll(n)                 run the mcmc chain for n steps with returning the log likelihood included.
+#' @field load <- by <- events(df) load data by events
+#' @field load(patients, tests)    load by patients and tests as separate data frames.
+#' @field load_by_list(list)       load data with a list containing patient and test data frames.
+#'
+#' @field events	           Retrieve a list of the events
+#' @field nEvents                  Number of events
+#' @field nPatients                Number of patients
+#' @field using_slope              are we using a slope model or not.
+#' @field transmission             The transmission parameter
+#' @field importation              The probability of a patient entering infected.
+#' @field false.neg                The probability of a test being a false negative.
+#' @field false.pos                The probability of a test being a false positive.
+#' @field logLik                   The log Likelihood
+#' @field nPatients                The number of patients in the population
+#' @field nSamples                 The number of Samples
+#' @field doStates                 Take a step updating states
+#' @field doTransmission           Take a transmission update step
+#' @field doImportation            Take an importation update step
+#' @field doFN	                   Take a false negative update step
+#' @field doFP                     Take a false positive update step
+#' @field doSlope	           Take a slope update step.
+#'
 #' @family mcmc
 #' @seealso \code{\link{doSim}} for simulating data.
+#' @export cont.inf.model
 NULL
 
 
